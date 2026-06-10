@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EcoTrack — Understand & Reduce Your Carbon Footprint</title>
+  <meta name="description" content="EcoTrack helps you understand, measure, and reduce your personal carbon footprint with an interactive calculator, daily habit tracker, and personalized CO₂-saving tips." />
+  <meta name="theme-color" content="#0d1f1a" />
+
+  <!-- Open Graph -->
+  <meta property="og:title"       content="EcoTrack — Carbon Footprint Tracker" />
+  <meta property="og:description" content="Calculate your carbon footprint and get personalised tips to live more sustainably." />
+  <meta property="og:type"        content="website" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ════════════════════ NAVBAR ════════════════════ -->
+<nav id="navbar" role="navigation" aria-label="Main navigation">
+  <a href="#hero" class="nav-logo" aria-label="EcoTrack home">
+    <div class="logo-icon" aria-hidden="true">🌿</div>
+    <span class="text-gradient">EcoTrack</span>
+  </a>
+  <ul class="nav-links" role="list">
+    <li><a href="#dashboard"  class="active">Dashboard</a></li>
+    <li><a href="#calculator">Calculator</a></li>
+    <li><a href="#insights">Insights</a></li>
+    <li><a href="#tracker">Tracker</a></li>
+    <li><a href="#benchmarks">Benchmarks</a></li>
+    <li><a href="#calculator" class="nav-cta">Calculate Now</a></li>
+  </ul>
+</nav>
+
+<!-- ════════════════════ HERO ════════════════════ -->
+<section id="hero" aria-labelledby="hero-heading">
+  <div class="hero-bg"></div>
+  <div class="hero-bg-img" style="background-image:url('assets/eco-bg.png')"></div>
+  <div class="hero-particles" aria-hidden="true"></div>
+
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-badge" aria-label="Version badge">
+        <span class="dot" aria-hidden="true"></span>
+        Climate Action Platform 2026
+      </div>
+
+      <h1 id="hero-heading" class="hero-title">
+        Track Your Impact.<br />
+        <span class="text-gradient">Shape Your Future.</span>
+      </h1>
+
+      <p class="hero-sub">
+        Understand your personal carbon footprint in minutes. Get science-backed
+        insights and a daily habit tracker that makes reducing your CO₂ emissions
+        simple, measurable, and actually rewarding.
+      </p>
+
+      <div class="hero-actions">
+        <button class="btn btn-primary btn-lg" id="hero-cta-btn" aria-label="Start carbon calculator">
+          🌍 Calculate My Footprint
+        </button>
+        <a href="#tracker" class="btn btn-outline btn-lg">
+          ✅ Daily Habits
+        </a>
+      </div>
+
+      <div class="hero-stats" aria-label="Key statistics">
+        <div class="hero-stat-item">
+          <div class="hero-stat-value">4.7t</div>
+          <div class="hero-stat-label">World average CO₂/yr</div>
+        </div>
+        <div class="hero-stat-item">
+          <div class="hero-stat-value">2t</div>
+          <div class="hero-stat-label">Paris 2050 target</div>
+        </div>
+        <div class="hero-stat-item">
+          <div class="hero-stat-value">73%</div>
+          <div class="hero-stat-label">Reduction possible</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decorative score ring preview -->
+  <div class="hero-visual" aria-hidden="true">
+    <div class="score-card" style="max-width:340px; margin:0 auto;">
+      <div class="score-ring-wrapper">
+        <canvas class="score-ring-canvas" id="hero-ring-canvas" width="220" height="220"></canvas>
+        <div class="score-ring-inner">
+          <div class="score-value" style="color:#00e676; font-size:2rem;">--</div>
+          <div class="score-unit">kg CO₂e</div>
+          <div class="score-label">per month</div>
+        </div>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-top:var(--space-md);">
+        Complete the calculator below to see your score here.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ DASHBOARD ════════════════════ -->
+<section id="dashboard" class="section" aria-labelledby="dashboard-heading">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-eyebrow">Your Overview</span>
+      <h2 id="dashboard-heading" class="section-title">
+        Carbon <span class="text-gradient">Dashboard</span>
+      </h2>
+      <p class="section-desc">A real-time snapshot of your estimated monthly CO₂ footprint by life area.</p>
+    </div>
+
+    <div class="dashboard-grid">
+      <!-- Score Ring -->
+      <div class="score-card reveal">
+        <div class="score-ring-wrapper">
+          <canvas class="score-ring-canvas" id="score-ring-canvas" width="220" height="220"></canvas>
+          <div class="score-ring-inner">
+            <div class="score-value" id="score-value">--</div>
+            <div class="score-unit">kg CO₂e</div>
+            <div class="score-label">per month</div>
+          </div>
+        </div>
+        <div class="score-grade" id="score-grade" style="color:var(--text-muted); background:var(--bg-elevated); border:1px solid var(--border); margin: 0 auto var(--space-md); display:inline-flex;">
+          Run the calculator →
+        </div>
+        <p class="score-meta">
+          Estimated annual: <strong id="score-annual" style="color:var(--accent)">--</strong><br/>
+          Based on your latest calculator inputs.
+        </p>
+        <button class="btn btn-ghost btn-sm" id="dashboard-cta" style="margin-top:var(--space-lg); width:100%;">
+          🔄 Recalculate
+        </button>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card reveal reveal-delay-1">
+          <div class="stat-icon transport" aria-hidden="true">🚗</div>
+          <div class="stat-value" id="stat-transport" style="color:#29b6f6">--</div>
+          <div class="stat-label">kg · Transport</div>
+          <div class="stat-change neutral" id="stat-transport-change">Per month</div>
+        </div>
+        <div class="stat-card reveal reveal-delay-2">
+          <div class="stat-icon energy" aria-hidden="true">⚡</div>
+          <div class="stat-value" id="stat-energy" style="color:#ffa726">--</div>
+          <div class="stat-label">kg · Energy</div>
+          <div class="stat-change neutral">Per month</div>
+        </div>
+        <div class="stat-card reveal reveal-delay-3">
+          <div class="stat-icon diet" aria-hidden="true">🥗</div>
+          <div class="stat-value" id="stat-diet" style="color:#00e676">--</div>
+          <div class="stat-label">kg · Diet</div>
+          <div class="stat-change neutral">Per month</div>
+        </div>
+        <div class="stat-card reveal reveal-delay-4">
+          <div class="stat-icon shopping" aria-hidden="true">🛍️</div>
+          <div class="stat-value" id="stat-shopping" style="color:#ab47bc">--</div>
+          <div class="stat-label">kg · Shopping</div>
+          <div class="stat-change neutral">Per month</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ CALCULATOR ════════════════════ -->
+<section id="calculator" class="section" aria-labelledby="calc-heading">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-eyebrow">Step-by-Step</span>
+      <h2 id="calc-heading" class="section-title">
+        Carbon <span class="text-gradient">Calculator</span>
+      </h2>
+      <p class="section-desc">Answer a few quick questions across 4 life areas. We'll calculate your monthly CO₂ footprint using IPCC-backed emission factors.</p>
+    </div>
+
+    <div class="calc-wrapper">
+      <!-- Step Indicators -->
+      <div class="calc-steps" aria-label="Calculator progress" role="tablist">
+        <!-- Step 1 -->
+        <div class="calc-step-item">
+          <div class="calc-step-wrapper">
+            <div class="calc-step-bubble active" role="tab" aria-selected="true">1</div>
+            <div class="calc-step-label active">Transport</div>
+          </div>
+          <div class="calc-step-connector"></div>
+        </div>
+        <!-- Step 2 -->
+        <div class="calc-step-item">
+          <div class="calc-step-wrapper">
+            <div class="calc-step-bubble" role="tab" aria-selected="false">2</div>
+            <div class="calc-step-label">Energy</div>
+          </div>
+          <div class="calc-step-connector"></div>
+        </div>
+        <!-- Step 3 -->
+        <div class="calc-step-item">
+          <div class="calc-step-wrapper">
+            <div class="calc-step-bubble" role="tab" aria-selected="false">3</div>
+            <div class="calc-step-label">Diet</div>
+          </div>
+          <div class="calc-step-connector"></div>
+        </div>
+        <!-- Step 4 -->
+        <div class="calc-step-item">
+          <div class="calc-step-wrapper">
+            <div class="calc-step-bubble" role="tab" aria-selected="false">4</div>
+            <div class="calc-step-label">Shopping</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calculator Card -->
+      <div class="calc-card" role="form" aria-label="Carbon footprint calculator">
+
+        <!-- ── STEP 0: Transport ── -->
+        <div class="calc-panel active" data-step="0" aria-labelledby="step0-title">
+          <div class="calc-panel-header">
+            <div class="calc-panel-icon" style="background:rgba(41,182,246,0.15);">🚗</div>
+            <div>
+              <h3 class="calc-panel-title" id="step0-title">Transport</h3>
+              <p class="calc-panel-desc">How you get around is typically the biggest emissions category.</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label" for="carType-toggle">Vehicle Type</label>
+              <div class="toggle-group" id="carType-toggle">
+                <button class="toggle-btn selected" data-group="carType" data-value="petrol" type="button">⛽ Petrol</button>
+                <button class="toggle-btn" data-group="carType" data-value="diesel"  type="button">🛢️ Diesel</button>
+                <button class="toggle-btn" data-group="carType" data-value="hybrid"  type="button">🔋 Hybrid</button>
+                <button class="toggle-btn" data-group="carType" data-value="ev"      type="button">⚡ Electric</button>
+                <button class="toggle-btn" data-group="carType" data-value="motorcycle" type="button">🏍️ Motorcycle</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="carKm">Weekly driving distance</label>
+              <div class="range-wrapper">
+                <div class="range-header">
+                  <span style="font-size:0.8rem; color:var(--text-muted)">0 km</span>
+                  <span class="range-value" style="color:var(--accent);">150 km</span>
+                  <span style="font-size:0.8rem; color:var(--text-muted)">1000 km</span>
+                </div>
+                <input type="range" class="form-range" id="carKm" name="carKm"
+                  min="0" max="1000" value="150" step="10" data-unit=" km"
+                  aria-label="Weekly driving distance in kilometres" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="publicPct">Public transit use</label>
+              <div class="range-wrapper">
+                <div class="range-header">
+                  <span style="font-size:0.8rem; color:var(--text-muted)">0%</span>
+                  <span class="range-value" style="color:var(--accent);">20%</span>
+                  <span style="font-size:0.8rem; color:var(--text-muted)">100%</span>
+                </div>
+                <input type="range" class="form-range" id="publicPct" name="publicPct"
+                  min="0" max="100" value="20" step="5" data-unit="%"
+                  aria-label="Percentage of trips made by public transport" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="flightHours">Flights per year (hours)</label>
+              <div class="range-wrapper">
+                <div class="range-header">
+                  <span style="font-size:0.8rem; color:var(--text-muted)">0h</span>
+                  <span class="range-value" style="color:var(--accent);">2 h</span>
+                  <span style="font-size:0.8rem; color:var(--text-muted)">100h</span>
+                </div>
+                <input type="range" class="form-range" id="flightHours" name="flightHours"
+                  min="0" max="100" value="2" step="1" data-unit=" h"
+                  aria-label="Total flight hours per year" />
+              </div>
+            </div>
+
+            <div class="form-group" style="align-items:flex-start;">
+              <label class="form-label">Quick Tip</label>
+              <div style="padding:var(--space-md); background:var(--accent-glass); border:1px solid var(--border-hover); border-radius:var(--radius-md); font-size:0.82rem; color:var(--text-secondary); line-height:1.6;">
+                🚂 Switching just one short-haul flight to train travel saves an estimated <strong style="color:var(--accent)">255 kg CO₂e</strong> — the equivalent of not driving for 3 months.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── STEP 1: Energy ── -->
+        <div class="calc-panel" data-step="1" aria-labelledby="step1-title">
+          <div class="calc-panel-header">
+            <div class="calc-panel-icon" style="background:rgba(255,167,38,0.15);">⚡</div>
+            <div>
+              <h3 class="calc-panel-title" id="step1-title">Home Energy</h3>
+              <p class="calc-panel-desc">Heating and electricity are the second-largest source of household emissions.</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="homeSize">Home floor area (m²)</label>
+              <div class="range-wrapper">
+                <div class="range-header">
+                  <span style="font-size:0.8rem; color:var(--text-muted)">20m²</span>
+                  <span class="range-value" style="color:var(--accent);">80 m²</span>
+                  <span style="font-size:0.8rem; color:var(--text-muted)">400m²</span>
+                </div>
+                <input type="range" class="form-range" id="homeSize" name="homeSize"
+                  min="20" max="400" value="80" step="5" data-unit=" m²"
+                  aria-label="Home floor area in square metres" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="electricType">Electricity source</label>
+              <select class="form-select" id="electricType" name="electricType"
+                aria-label="Type of electricity supply">
+                <option value="standard">Standard Grid (coal/gas mix)</option>
+                <option value="mixed">Mixed (some renewables)</option>
+                <option value="renewable">100% Renewable / Solar</option>
+              </select>
+            </div>
+
+            <div class="form-group full">
+              <label class="form-label" for="heatType-toggle">Heating system</label>
+              <div class="toggle-group" id="heatType-toggle">
+                <button class="toggle-btn selected" data-group="heatType" data-value="gas"        type="button">🔥 Gas Boiler</button>
+                <button class="toggle-btn"           data-group="heatType" data-value="electric"  type="button">⚡ Electric</button>
+                <button class="toggle-btn"           data-group="heatType" data-value="heat_pump" type="button">♻️ Heat Pump</button>
+                <button class="toggle-btn"           data-group="heatType" data-value="district"  type="button">🏘️ District Heat</button>
+                <button class="toggle-btn"           data-group="heatType" data-value="none"      type="button">🌴 No Heating</button>
+              </div>
+            </div>
+
+            <div class="form-group full">
+              <label class="form-label">Quick Tip</label>
+              <div style="padding:var(--space-md); background:rgba(255,167,38,0.07); border:1px solid rgba(255,167,38,0.25); border-radius:var(--radius-md); font-size:0.82rem; color:var(--text-secondary); line-height:1.6;">
+                ☀️ Switching to a 100% renewable electricity tariff is one of the easiest wins — it can cut your electricity emissions by <strong style="color:var(--amber)">up to 90%</strong> with a single phone call.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── STEP 2: Diet ── -->
+        <div class="calc-panel" data-step="2" aria-labelledby="step2-title">
+          <div class="calc-panel-header">
+            <div class="calc-panel-icon" style="background:rgba(0,230,118,0.1);">🥗</div>
+            <div>
+              <h3 class="calc-panel-title" id="step2-title">Diet & Food</h3>
+              <p class="calc-panel-desc">What we eat can account for 10–30% of our total carbon footprint.</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">Diet type</label>
+              <div class="toggle-group">
+                <button class="toggle-btn" data-group="dietType" data-value="vegan"       type="button">🌱 Vegan</button>
+                <button class="toggle-btn" data-group="dietType" data-value="vegetarian"  type="button">🥦 Vegetarian</button>
+                <button class="toggle-btn selected" data-group="dietType" data-value="omnivore"    type="button">🍽️ Omnivore</button>
+                <button class="toggle-btn" data-group="dietType" data-value="heavy_meat"  type="button">🥩 Heavy Meat</button>
+              </div>
+            </div>
+
+            <div class="form-group full">
+              <label class="form-label">Food waste level</label>
+              <div class="toggle-group">
+                <button class="toggle-btn" data-group="foodWaste" data-value="none"   type="button">✅ Minimal — I meal-plan & compost</button>
+                <button class="toggle-btn selected" data-group="foodWaste" data-value="low"    type="button">🟡 Low — occasional waste</button>
+                <button class="toggle-btn" data-group="foodWaste" data-value="high"   type="button">🔴 High — I throw away a lot</button>
+              </div>
+            </div>
+
+            <!-- Diet comparison table -->
+            <div class="form-group full">
+              <label class="form-label">Diet CO₂e comparison (kg/month)</label>
+              <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-sm);">
+                <div style="text-align:center; padding:var(--space-md); background:var(--bg-mid); border-radius:var(--radius-md); border:1px solid var(--border);">
+                  <div style="font-size:1.3rem;">🌱</div>
+                  <div style="font-family:'Outfit',sans-serif; font-size:1.2rem; font-weight:800; color:#00e676;">30</div>
+                  <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase;">Vegan</div>
+                </div>
+                <div style="text-align:center; padding:var(--space-md); background:var(--bg-mid); border-radius:var(--radius-md); border:1px solid var(--border);">
+                  <div style="font-size:1.3rem;">🥦</div>
+                  <div style="font-family:'Outfit',sans-serif; font-size:1.2rem; font-weight:800; color:#b2ff59;">55</div>
+                  <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase;">Vegetarian</div>
+                </div>
+                <div style="text-align:center; padding:var(--space-md); background:var(--bg-mid); border-radius:var(--radius-md); border:1px solid var(--border);">
+                  <div style="font-size:1.3rem;">🍽️</div>
+                  <div style="font-family:'Outfit',sans-serif; font-size:1.2rem; font-weight:800; color:#ffa726;">100</div>
+                  <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase;">Omnivore</div>
+                </div>
+                <div style="text-align:center; padding:var(--space-md); background:var(--bg-mid); border-radius:var(--radius-md); border:1px solid var(--border);">
+                  <div style="font-size:1.3rem;">🥩</div>
+                  <div style="font-family:'Outfit',sans-serif; font-size:1.2rem; font-weight:800; color:#ef5350;">180</div>
+                  <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase;">Heavy Meat</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── STEP 3: Shopping ── -->
+        <div class="calc-panel" data-step="3" aria-labelledby="step3-title">
+          <div class="calc-panel-header">
+            <div class="calc-panel-icon" style="background:rgba(171,71,188,0.15);">🛍️</div>
+            <div>
+              <h3 class="calc-panel-title" id="step3-title">Lifestyle & Shopping</h3>
+              <p class="calc-panel-desc">Consumer goods and delivery habits all add up to your total footprint.</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="onlineOrders">Online orders per month</label>
+              <div class="range-wrapper">
+                <div class="range-header">
+                  <span style="font-size:0.8rem; color:var(--text-muted)">0</span>
+                  <span class="range-value" style="color:var(--accent);">4 orders</span>
+                  <span style="font-size:0.8rem; color:var(--text-muted)">30</span>
+                </div>
+                <input type="range" class="form-range" id="onlineOrders" name="onlineOrders"
+                  min="0" max="30" value="4" step="1" data-unit=" orders"
+                  aria-label="Number of online orders per month" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="clothingItems">New clothing items per year</label>
+              <div class="range-wrapper">
+                <div class="range-header">
+                  <span style="font-size:0.8rem; color:var(--text-muted)">0</span>
+                  <span class="range-value" style="color:var(--accent);">8 items</span>
+                  <span style="font-size:0.8rem; color:var(--text-muted)">100</span>
+                </div>
+                <input type="range" class="form-range" id="clothingItems" name="clothingItems"
+                  min="0" max="100" value="8" step="1" data-unit=" items"
+                  aria-label="Number of new clothing items purchased per year" />
+              </div>
+            </div>
+
+            <div class="form-group full">
+              <label class="form-label">Recycling habits</label>
+              <div class="toggle-group">
+                <button class="toggle-btn" data-group="recycling" data-value="none"    type="button">❌ Rarely recycle</button>
+                <button class="toggle-btn selected" data-group="recycling" data-value="partial" type="button">🟡 Recycle some things</button>
+                <button class="toggle-btn" data-group="recycling" data-value="full"    type="button">✅ Full recycling + composting</button>
+              </div>
+            </div>
+
+            <div class="form-group full">
+              <div style="padding:var(--space-md); background:rgba(171,71,188,0.07); border:1px solid rgba(171,71,188,0.25); border-radius:var(--radius-md); font-size:0.82rem; color:var(--text-secondary); line-height:1.6;">
+                👕 Fast fashion is one of the world's most polluting industries. Buying secondhand or extending clothing life by just 9 extra months reduces each item's carbon impact by <strong style="color:#ab47bc">~30%</strong>.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── RESULTS PANEL ── -->
+        <div id="results-panel" role="region" aria-labelledby="results-heading">
+          <div class="results-header">
+            <h3 id="results-heading" style="font-size:1.6rem; font-weight:800; margin-bottom:var(--space-md);">
+              Your Carbon Footprint Results 🌍
+            </h3>
+            <div class="results-ring">
+              <canvas id="results-ring-canvas" width="200" height="200"></canvas>
+              <div class="results-ring-inner">
+                <div class="results-value" id="results-value">0</div>
+                <div class="results-unit">kg CO₂e/mo</div>
+              </div>
+            </div>
+            <div id="results-grade" style="font-size:1.1rem; font-weight:700; margin-bottom:var(--space-md);">
+              Calculating...
+            </div>
+          </div>
+
+          <div class="results-breakdown">
+            <div class="breakdown-item">
+              <div class="breakdown-icon">🚗</div>
+              <div class="breakdown-val" id="result-transport" style="color:#29b6f6">0</div>
+              <div class="breakdown-label">Transport</div>
+            </div>
+            <div class="breakdown-item">
+              <div class="breakdown-icon">⚡</div>
+              <div class="breakdown-val" id="result-energy" style="color:#ffa726">0</div>
+              <div class="breakdown-label">Energy</div>
+            </div>
+            <div class="breakdown-item">
+              <div class="breakdown-icon">🥗</div>
+              <div class="breakdown-val" id="result-diet" style="color:#00e676">0</div>
+              <div class="breakdown-label">Diet</div>
+            </div>
+            <div class="breakdown-item">
+              <div class="breakdown-icon">🛍️</div>
+              <div class="breakdown-val" id="result-shopping" style="color:#ab47bc">0</div>
+              <div class="breakdown-label">Shopping</div>
+            </div>
+          </div>
+
+          <p style="text-align:center; font-size:0.875rem; color:var(--text-muted); margin-bottom:var(--space-xl);">
+            All values in kg CO₂e per month. Scroll down to see your personalized insights and comparison.
+          </p>
+
+          <div class="results-actions">
+            <button class="btn btn-ghost" id="reset-calc-btn" type="button" aria-label="Redo calculator">
+              🔄 Recalculate
+            </button>
+            <a href="#insights" class="btn btn-primary">
+              📊 See Insights →
+            </a>
+          </div>
+        </div>
+
+        <!-- Calculator Nav -->
+        <div class="calc-nav">
+          <button class="btn btn-outline btn-sm" id="calc-prev" type="button" aria-label="Previous step">← Back</button>
+          <div style="display:flex; align-items:center; gap:var(--space-md);">
+            <span class="calc-progress-text" id="calc-progress-text">Step 1 of 4</span>
+            <div class="live-estimate" aria-live="polite" aria-label="Live estimate">
+              <span>🌿 Live estimate:</span>
+              <span class="live-estimate-value" id="live-estimate-value">-- kg</span>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="calc-next" type="button" aria-label="Next step">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ INSIGHTS ════════════════════ -->
+<section id="insights" class="section" aria-labelledby="insights-heading">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-eyebrow">Data-Driven</span>
+      <h2 id="insights-heading" class="section-title">
+        Your <span class="text-gradient">Insights</span>
+      </h2>
+      <p class="section-desc">A visual breakdown of where your emissions come from and personalised actions to reduce them.</p>
+    </div>
+
+    <div class="insights-grid reveal">
+      <!-- Donut Chart -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <div class="chart-title">Emissions Breakdown</div>
+            <div class="chart-subtitle">By category · kg CO₂e/month</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:center; gap:var(--space-xl);">
+          <canvas id="donut-canvas" width="200" height="200" aria-label="Donut chart showing emissions by category"></canvas>
+          <div class="donut-legend" id="donut-legend">
+            <div class="legend-item">
+              <div class="legend-dot-label">
+                <div class="legend-dot" style="background:#29b6f6"></div>
+                <span class="legend-label">Transport</span>
+              </div>
+              <span class="legend-val" style="color:#29b6f6">-- kg</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot-label">
+                <div class="legend-dot" style="background:#ffa726"></div>
+                <span class="legend-label">Energy</span>
+              </div>
+              <span class="legend-val" style="color:#ffa726">-- kg</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot-label">
+                <div class="legend-dot" style="background:#00e676"></div>
+                <span class="legend-label">Diet</span>
+              </div>
+              <span class="legend-val" style="color:#00e676">-- kg</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot-label">
+                <div class="legend-dot" style="background:#ab47bc"></div>
+                <span class="legend-label">Shopping</span>
+              </div>
+              <span class="legend-val" style="color:#ab47bc">-- kg</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Actions -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <div class="chart-title">Your Biggest Opportunity</div>
+            <div class="chart-subtitle">If you only do one thing, do this</div>
+          </div>
+        </div>
+        <div id="biggest-opportunity" style="text-align:center; padding:var(--space-lg) 0;">
+          <div style="font-size:3rem; margin-bottom:var(--space-md);">🌿</div>
+          <p style="color:var(--text-muted); font-size:0.9rem;">Complete the calculator to unlock your personalized top action.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tips Grid -->
+    <div style="margin-top:var(--space-xl);">
+      <div class="section-header reveal" style="margin-bottom:var(--space-lg); text-align:left;">
+        <h3 style="font-size:1.4rem; font-weight:800;">
+          Personalised Reduction Tips
+        </h3>
+        <p style="font-size:0.875rem; color:var(--text-muted); margin-top:4px;">
+          Based on your calculator inputs, ranked by CO₂ savings potential.
+        </p>
+      </div>
+      <div class="tips-grid" id="tips-container">
+        <!-- Populated by JS -->
+        <div class="tip-card reveal">
+          <div class="tip-header">
+            <span class="tip-emoji">⚡</span>
+            <span class="impact-badge high">↑↑ High Impact</span>
+          </div>
+          <div class="tip-title">Switch to an Electric Vehicle</div>
+          <div class="tip-desc">EVs produce ~75% fewer emissions over their lifetime than petrol cars, especially on a renewable grid.</div>
+          <div class="tip-saving">🌿 <span>Save ~180 kg CO₂e/month</span></div>
+        </div>
+        <div class="tip-card reveal reveal-delay-1">
+          <div class="tip-header">
+            <span class="tip-emoji">☀️</span>
+            <span class="impact-badge high">↑↑ High Impact</span>
+          </div>
+          <div class="tip-title">Switch to Renewable Electricity</div>
+          <div class="tip-desc">A green tariff or solar panels can cut your home electricity emissions by up to 90%.</div>
+          <div class="tip-saving">🌿 <span>Save ~90 kg CO₂e/month</span></div>
+        </div>
+        <div class="tip-card reveal reveal-delay-2">
+          <div class="tip-header">
+            <span class="tip-emoji">🥦</span>
+            <span class="impact-badge medium">↑ Medium Impact</span>
+          </div>
+          <div class="tip-title">Try Plant-Based Mondays</div>
+          <div class="tip-desc">One meat-free day per week saves an estimated 52 kg CO₂e per year — and improves health.</div>
+          <div class="tip-saving">🌿 <span>Save ~25 kg CO₂e/month</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ TRACKER ════════════════════ -->
+<section id="tracker" class="section" aria-labelledby="tracker-heading">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-eyebrow">Build Green Habits</span>
+      <h2 id="tracker-heading" class="section-title">
+        Daily <span class="text-gradient">Habit Tracker</span>
+      </h2>
+      <p class="section-desc">Small daily actions compound into massive impact. Track eco-habits, build streaks, and celebrate wins.</p>
+    </div>
+
+    <div class="tracker-layout">
+      <!-- Habit List -->
+      <div class="habits-card reveal">
+        <div class="habits-header">
+          <div class="habits-title">Today's Eco-Actions</div>
+          <div class="habits-date" id="habits-date">Today</div>
+        </div>
+        <div class="habits-list" id="habits-list" role="list" aria-label="Daily eco-habits checklist">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Streak + Calendar -->
+      <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+        <div class="streak-card reveal reveal-delay-1">
+          <div class="streak-flame" aria-hidden="true">🔥</div>
+          <div class="streak-number" id="streak-number" aria-label="Current streak">0</div>
+          <div class="streak-label">Day Streak</div>
+          <div class="streak-best" id="best-streak">Best: 0 days</div>
+
+          <div class="weekly-dots" id="weekly-dots" role="list" aria-label="Activity this week">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Tips card -->
+        <div class="card card-sm reveal reveal-delay-2">
+          <div style="font-size:1.5rem; margin-bottom:var(--space-sm);">💡</div>
+          <div style="font-size:0.95rem; font-weight:700; margin-bottom:var(--space-sm);">Did You Know?</div>
+          <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.6;">
+            If every person on Earth ate plant-based just one day per week, we'd eliminate emissions equivalent to <strong style="color:var(--accent)">1.3 billion</strong> cars from the road annually.
+          </p>
+        </div>
+
+        <div class="card card-sm reveal reveal-delay-3">
+          <div style="font-size:1.5rem; margin-bottom:var(--space-sm);">🎯</div>
+          <div style="font-size:0.95rem; font-weight:700; margin-bottom:var(--space-sm);">Monthly Goal</div>
+          <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.6; margin-bottom:var(--space-md);">
+            Check off at least 5 habits each day this month to hit your 2t/yr target.
+          </p>
+          <div style="height:6px; background:var(--bg-elevated); border-radius:var(--radius-full); overflow:hidden;">
+            <div id="goal-bar" style="height:100%; width:0%; background:linear-gradient(90deg, var(--accent), #69f0ae); border-radius:var(--radius-full); transition:width 1s var(--ease-out);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ BENCHMARKS ════════════════════ -->
+<section id="benchmarks" class="section" aria-labelledby="benchmarks-heading">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-eyebrow">Global Context</span>
+      <h2 id="benchmarks-heading" class="section-title">
+        How You <span class="text-gradient">Compare</span>
+      </h2>
+      <p class="section-desc">See where your footprint sits against national averages and climate science targets.</p>
+    </div>
+
+    <div class="benchmark-grid">
+      <!-- Bar Chart -->
+      <div class="chart-card reveal">
+        <div class="chart-card-header">
+          <div>
+            <div class="chart-title">Annual CO₂ Comparison</div>
+            <div class="chart-subtitle">Tonnes CO₂e per year</div>
+          </div>
+        </div>
+        <div class="benchmark-bars" id="benchmark-bars">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Targets Info -->
+      <div class="global-targets-card reveal reveal-delay-1">
+        <div style="font-size:1.1rem; font-weight:700; margin-bottom:var(--space-lg);">
+          🌍 Global Climate Targets
+        </div>
+
+        <div class="target-item">
+          <div class="target-icon" style="background:rgba(239,83,80,0.15); font-size:1.2rem;">🇺🇸</div>
+          <div class="target-text">
+            <div class="target-name" style="color:#ef5350;">USA Average · 16t/yr</div>
+            <div class="target-desc">One of the highest per-capita footprints globally. Driven by car culture and large homes.</div>
+          </div>
+        </div>
+        <div class="target-item">
+          <div class="target-icon" style="background:rgba(255,167,38,0.15);">🇪🇺</div>
+          <div class="target-text">
+            <div class="target-name" style="color:#ffa726;">EU Average · 7t/yr</div>
+            <div class="target-desc">Helped by better public transit, district heating, and higher fuel taxes.</div>
+          </div>
+        </div>
+        <div class="target-item">
+          <div class="target-icon" style="background:rgba(41,182,246,0.15);">🌏</div>
+          <div class="target-text">
+            <div class="target-name" style="color:#29b6f6;">World Average · 4.7t/yr</div>
+            <div class="target-desc">The global mean, skewed upward by wealthy nations. Many developing countries are below 2t.</div>
+          </div>
+        </div>
+        <div class="target-item">
+          <div class="target-icon" style="background:rgba(0,230,118,0.1);">🎯</div>
+          <div class="target-text">
+            <div class="target-name" style="color:#00e676;">Paris 2050 Target · 2t/yr</div>
+            <div class="target-desc">The per-capita budget consistent with limiting warming to 1.5°C. A big but achievable challenge.</div>
+          </div>
+        </div>
+
+        <div style="margin-top:var(--space-lg); padding:var(--space-md); background:var(--accent-glass); border:1px solid var(--border-hover); border-radius:var(--radius-md);">
+          <p style="font-size:0.82rem; color:var(--text-secondary); line-height:1.6;">
+            📘 <strong>Sources:</strong> IPCC AR6 (2022), IEA CO₂ Emissions 2023, EPA Household Emission Factors, UK DESNZ Carbon Factors 2023.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ FOOTER ════════════════════ -->
+<footer id="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="nav-logo" style="margin-bottom:var(--space-sm);">
+          <div class="logo-icon">🌿</div>
+          <span class="text-gradient">EcoTrack</span>
+        </div>
+        <p>Empowering individuals to understand and reduce their carbon footprint through science-backed insights and simple daily actions.</p>
+      </div>
+
+      <div class="footer-links">
+        <h4>Sections</h4>
+        <ul>
+          <li><a href="#dashboard">Dashboard</a></li>
+          <li><a href="#calculator">Calculator</a></li>
+          <li><a href="#insights">Insights</a></li>
+          <li><a href="#tracker">Tracker</a></li>
+          <li><a href="#benchmarks">Benchmarks</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links">
+        <h4>Data Sources</h4>
+        <ul>
+          <li><a href="#">IPCC AR6 2022</a></li>
+          <li><a href="#">IEA CO₂ Report</a></li>
+          <li><a href="#">EPA GHG Factors</a></li>
+          <li><a href="#">UK DESNZ 2023</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 EcoTrack · Built for a cooler planet 🌍</span>
+      <span style="display:flex; align-items:center; gap:var(--space-sm);">
+        <span style="width:8px; height:8px; background:var(--accent); border-radius:50%; box-shadow:0 0 8px var(--accent);"></span>
+        All data stored locally · No tracking · No ads
+      </span>
+    </div>
+  </div>
+</footer>
+
+<!-- ════════════════════ TOAST CONTAINER ════════════════════ -->
+<div id="toast-container" role="status" aria-live="polite" aria-label="Notifications"></div>
+
+<script src="app.js"></script>
+
+<!-- Bonus: Animate goal bar after page load -->
+<script>
+  setTimeout(() => {
+    const bar = document.getElementById('goal-bar');
+    if (bar) {
+      // Show rough % based on today's habits
+      const todayKey = (() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+      })();
+      try {
+        const saved = JSON.parse(localStorage.getItem('ecotrack_state') || '{}');
+        const todayHabits = saved?.habits?.[todayKey] || {};
+        const count = Object.values(todayHabits).filter(Boolean).length;
+        const pct = Math.min((count / 5) * 100, 100);
+        setTimeout(() => { bar.style.width = pct + '%'; }, 600);
+      } catch(e) {}
+    }
+
+    // Animate hero ring with default values
+    const heroCanvas = document.getElementById('hero-ring-canvas');
+    if (heroCanvas && window.drawScoreRing) {
+      drawScoreRing(heroCanvas, 0, 1500, '#00e676', 220, false);
+    }
+  }, 500);
+</script>
+</body>
+</html>
