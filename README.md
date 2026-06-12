@@ -1,7 +1,7 @@
 # 🌿 EcoTrack — Carbon Footprint Tracker
 
 ## To test the code use this URL :
- https://ecosystem-orcin.vercel.app/ 
+https://kushalgupta-07.github.io/Carbon-Footprint-Awareness-Platform/
 
 
 > **Understand, track, and reduce your personal carbon footprint through simple actions and personalized insights.**
