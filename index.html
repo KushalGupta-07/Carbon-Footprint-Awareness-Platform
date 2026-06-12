@@ -6,6 +6,7 @@
   <title>EcoTrack — Understand & Reduce Your Carbon Footprint</title>
   <meta name="description" content="EcoTrack helps you understand, measure, and reduce your personal carbon footprint with an interactive calculator, daily habit tracker, and personalized CO₂-saving tips." />
   <meta name="theme-color" content="#0d1f1a" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'; img-src 'self' data:; connect-src 'self';" />
 
   <!-- Open Graph -->
   <meta property="og:title"       content="EcoTrack — Carbon Footprint Tracker" />
@@ -229,8 +230,8 @@
 
           <div class="form-grid">
             <div class="form-group full">
-              <label class="form-label" for="carType-toggle">Vehicle Type</label>
-              <div class="toggle-group" id="carType-toggle">
+              <span class="form-label" id="carType-label">Vehicle Type</span>
+              <div class="toggle-group" id="carType-toggle" role="group" aria-labelledby="carType-label">
                 <button class="toggle-btn selected" data-group="carType" data-value="petrol" type="button">⛽ Petrol</button>
                 <button class="toggle-btn" data-group="carType" data-value="diesel"  type="button">🛢️ Diesel</button>
                 <button class="toggle-btn" data-group="carType" data-value="hybrid"  type="button">🔋 Hybrid</button>
@@ -326,8 +327,8 @@
             </div>
 
             <div class="form-group full">
-              <label class="form-label" for="heatType-toggle">Heating system</label>
-              <div class="toggle-group" id="heatType-toggle">
+              <span class="form-label" id="heatType-label">Heating system</span>
+              <div class="toggle-group" id="heatType-toggle" role="group" aria-labelledby="heatType-label">
                 <button class="toggle-btn selected" data-group="heatType" data-value="gas"        type="button">🔥 Gas Boiler</button>
                 <button class="toggle-btn"           data-group="heatType" data-value="electric"  type="button">⚡ Electric</button>
                 <button class="toggle-btn"           data-group="heatType" data-value="heat_pump" type="button">♻️ Heat Pump</button>
@@ -357,8 +358,8 @@
 
           <div class="form-grid">
             <div class="form-group full">
-              <label class="form-label">Diet type</label>
-              <div class="toggle-group">
+              <span class="form-label" id="dietType-label">Diet type</span>
+              <div class="toggle-group" role="group" aria-labelledby="dietType-label">
                 <button class="toggle-btn" data-group="dietType" data-value="vegan"       type="button">🌱 Vegan</button>
                 <button class="toggle-btn" data-group="dietType" data-value="vegetarian"  type="button">🥦 Vegetarian</button>
                 <button class="toggle-btn selected" data-group="dietType" data-value="omnivore"    type="button">🍽️ Omnivore</button>
@@ -367,8 +368,8 @@
             </div>
 
             <div class="form-group full">
-              <label class="form-label">Food waste level</label>
-              <div class="toggle-group">
+              <span class="form-label" id="foodWaste-label">Food waste level</span>
+              <div class="toggle-group" role="group" aria-labelledby="foodWaste-label">
                 <button class="toggle-btn" data-group="foodWaste" data-value="none"   type="button">✅ Minimal — I meal-plan & compost</button>
                 <button class="toggle-btn selected" data-group="foodWaste" data-value="low"    type="button">🟡 Low — occasional waste</button>
                 <button class="toggle-btn" data-group="foodWaste" data-value="high"   type="button">🔴 High — I throw away a lot</button>
@@ -444,8 +445,8 @@
             </div>
 
             <div class="form-group full">
-              <label class="form-label">Recycling habits</label>
-              <div class="toggle-group">
+              <span class="form-label" id="recycling-label">Recycling habits</span>
+              <div class="toggle-group" role="group" aria-labelledby="recycling-label">
                 <button class="toggle-btn" data-group="recycling" data-value="none"    type="button">❌ Rarely recycle</button>
                 <button class="toggle-btn selected" data-group="recycling" data-value="partial" type="button">🟡 Recycle some things</button>
                 <button class="toggle-btn" data-group="recycling" data-value="full"    type="button">✅ Full recycling + composting</button>
@@ -802,10 +803,10 @@
       <div class="footer-links">
         <h4>Data Sources</h4>
         <ul>
-          <li><a href="#">IPCC AR6 2022</a></li>
-          <li><a href="#">IEA CO₂ Report</a></li>
-          <li><a href="#">EPA GHG Factors</a></li>
-          <li><a href="#">UK DESNZ 2023</a></li>
+          <li><a href="https://www.ipcc.ch/report/ar6/wg3/" target="_blank" rel="noopener noreferrer">IPCC AR6 2022</a></li>
+          <li><a href="https://www.iea.org/reports/co2-emissions-in-2023" target="_blank" rel="noopener noreferrer">IEA CO₂ Report</a></li>
+          <li><a href="https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator" target="_blank" rel="noopener noreferrer">EPA GHG Factors</a></li>
+          <li><a href="https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2023" target="_blank" rel="noopener noreferrer">UK DESNZ 2023</a></li>
         </ul>
       </div>
     </div>
@@ -825,31 +826,5 @@
 
 <script src="app.js"></script>
 
-<!-- Bonus: Animate goal bar after page load -->
-<script>
-  setTimeout(() => {
-    const bar = document.getElementById('goal-bar');
-    if (bar) {
-      // Show rough % based on today's habits
-      const todayKey = (() => {
-        const d = new Date();
-        return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
-      })();
-      try {
-        const saved = JSON.parse(localStorage.getItem('ecotrack_state') || '{}');
-        const todayHabits = saved?.habits?.[todayKey] || {};
-        const count = Object.values(todayHabits).filter(Boolean).length;
-        const pct = Math.min((count / 5) * 100, 100);
-        setTimeout(() => { bar.style.width = pct + '%'; }, 600);
-      } catch(e) {}
-    }
-
-    // Animate hero ring with default values
-    const heroCanvas = document.getElementById('hero-ring-canvas');
-    if (heroCanvas && window.drawScoreRing) {
-      drawScoreRing(heroCanvas, 0, 1500, '#00e676', 220, false);
-    }
-  }, 500);
-</script>
 </body>
 </html>

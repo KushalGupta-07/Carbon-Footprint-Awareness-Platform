@@ -4,6 +4,53 @@
 
 'use strict';
 
+// ── Security & HTML Escaping ─────────────────────────────────
+function escapeHTML(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+const SCHEMA = {
+  inputs: {
+    transport: {
+      carKm: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1000 ? v : 150,
+      carType: (v) => ['petrol', 'diesel', 'hybrid', 'ev', 'motorcycle'].includes(v) ? v : 'petrol',
+      flightHours: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100 ? v : 2,
+      publicPct: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100 ? v : 20,
+    },
+    energy: {
+      homeSize: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 20 && v <= 400 ? v : 80,
+      electricType: (v) => ['standard', 'mixed', 'renewable'].includes(v) ? v : 'standard',
+      heatType: (v) => ['gas', 'electric', 'heat_pump', 'district', 'none'].includes(v) ? v : 'gas',
+    },
+    diet: {
+      dietType: (v) => ['vegan', 'vegetarian', 'omnivore', 'heavy_meat'].includes(v) ? v : 'omnivore',
+      foodWaste: (v) => ['none', 'low', 'high'].includes(v) ? v : 'low',
+    },
+    shopping: {
+      onlineOrders: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 30 ? v : 4,
+      clothingItems: (v) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 100 ? v : 8,
+      recycling: (v) => ['none', 'partial', 'full'].includes(v) ? v : 'partial',
+    },
+  },
+  scores: {
+    transport: (v) => typeof v === 'number' && Number.isFinite(v) ? Math.max(0, v) : 0,
+    energy: (v) => typeof v === 'number' && Number.isFinite(v) ? Math.max(0, v) : 0,
+    diet: (v) => typeof v === 'number' && Number.isFinite(v) ? Math.max(0, v) : 0,
+    shopping: (v) => typeof v === 'number' && Number.isFinite(v) ? Math.max(0, v) : 0,
+    total: (v) => typeof v === 'number' && Number.isFinite(v) ? Math.max(0, v) : 0,
+  },
+  streak: (v) => typeof v === 'number' && Number.isInteger(v) && v >= 0 ? v : 0,
+  bestStreak: (v) => typeof v === 'number' && Number.isInteger(v) && v >= 0 ? v : 0,
+  lastCheckedDate: (v) => typeof v === 'string' && /^\d{4}-\d{1,2}-\d{1,2}$/.test(v) ? v : null,
+  calculatorDone: (v) => typeof v === 'boolean' ? v : false,
+};
+
 // ── Constants & Emission Factors ─────────────────────────────
 // Sources: IPCC AR6, EPA, UK DESNZ 2023 (kg CO₂e per unit)
 const EF = {
@@ -249,29 +296,79 @@ function loadState() {
     const raw = localStorage.getItem('ecotrack_state');
     if (!raw) return;
     const saved = JSON.parse(raw);
-    Object.assign(State.inputs,  saved.inputs  || {});
-    Object.assign(State.scores,  saved.scores  || {});
-    Object.assign(State.habits,  saved.habits  || {});
-    State.streak         = saved.streak         || 0;
-    State.bestStreak     = saved.bestStreak     || 0;
-    State.lastCheckedDate= saved.lastCheckedDate|| null;
-    State.calculatorDone = saved.calculatorDone || false;
-  } catch(e) {}
+    if (!saved || typeof saved !== 'object') return;
+
+    // Validate inputs
+    if (saved.inputs && typeof saved.inputs === 'object') {
+      for (const cat of ['transport', 'energy', 'diet', 'shopping']) {
+        if (saved.inputs[cat] && typeof saved.inputs[cat] === 'object') {
+          for (const key in SCHEMA.inputs[cat]) {
+            if (saved.inputs[cat][key] !== undefined) {
+              State.inputs[cat][key] = SCHEMA.inputs[cat][key](saved.inputs[cat][key]);
+            }
+          }
+        }
+      }
+    }
+
+    // Validate scores
+    if (saved.scores && typeof saved.scores === 'object') {
+      for (const key in SCHEMA.scores) {
+        if (saved.scores[key] !== undefined) {
+          State.scores[key] = SCHEMA.scores[key](saved.scores[key]);
+        }
+      }
+    }
+
+    // Validate habits
+    if (saved.habits && typeof saved.habits === 'object') {
+      for (const dateKey in saved.habits) {
+        if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(dateKey) && saved.habits[dateKey] && typeof saved.habits[dateKey] === 'object') {
+          State.habits[dateKey] = {};
+          for (const habitId in saved.habits[dateKey]) {
+            const habitExists = HABITS.some(h => h.id === habitId);
+            if (habitExists) {
+              State.habits[dateKey][habitId] = !!saved.habits[dateKey][habitId];
+            }
+          }
+        }
+      }
+    }
+
+    if (saved.streak !== undefined) State.streak = SCHEMA.streak(saved.streak);
+    if (saved.bestStreak !== undefined) State.bestStreak = SCHEMA.bestStreak(saved.bestStreak);
+    if (saved.lastCheckedDate !== undefined) State.lastCheckedDate = SCHEMA.lastCheckedDate(saved.lastCheckedDate);
+    if (saved.calculatorDone !== undefined) State.calculatorDone = SCHEMA.calculatorDone(saved.calculatorDone);
+  } catch(e) {
+    console.error("Error loading state: ", e);
+  }
 }
 
 // ── Calculation Engine ────────────────────────────────────────
 function calcTransport(inp) {
   const carFactor = EF[`car_${inp.carType}`] || EF.car_petrol;
-  const carKgMonth = inp.carKm * 4.33 * carFactor * (1 - inp.publicPct / 100);
+  // Compute car emissions for the fraction of travel done by car
+  const carKmMonth = inp.carKm * 4.33 * (1 - inp.publicPct / 100);
+  const carKgMonth = carKmMonth * carFactor;
+  
+  // Compute public transit emissions for the fraction of travel done by transit
+  // Use average of bus (0.089) and train (0.041) factors
+  const transitFactor = (EF.bus + EF.train) / 2;
+  const transitKmMonth = inp.carKm * 4.33 * (inp.publicPct / 100);
+  const transitKgMonth = transitKmMonth * transitFactor;
+
+  // Flights: hours per year to hours per month, economy is default
   const flightKgMonth = (inp.flightHours / 12) * EF.flight_economy;
-  return Math.round(carKgMonth + flightKgMonth);
+  
+  return Math.round(carKgMonth + transitKgMonth + flightKgMonth);
 }
 
 function calcEnergy(inp) {
   const electricFactor = EF[`electric_${inp.electricType}`] || EF.electric_standard;
   const kwhMonth = inp.homeSize * 0.85;
   const electricKg = kwhMonth * electricFactor;
-  const heatKg = EF[`heat_${inp.heatType}`] * inp.homeSize;
+  const heatFactor = EF[`heat_${inp.heatType}`] !== undefined ? EF[`heat_${inp.heatType}`] : EF.heat_none;
+  const heatKg = heatFactor * inp.homeSize;
   return Math.round(electricKg + heatKg);
 }
 
@@ -456,13 +553,14 @@ function adjustColor(hex, amount) {
 // ── Toast Notifications ───────────────────────────────────────
 function showToast(title, msg, emoji = '🌿', duration = 4000) {
   const container = $('#toast-container');
+  if (!container) return;
   const toast = document.createElement('div');
   toast.className = 'toast';
   toast.innerHTML = `
-    <span class="toast-icon">${emoji}</span>
+    <span class="toast-icon">${escapeHTML(emoji)}</span>
     <div class="toast-text">
-      <div class="toast-title">${title}</div>
-      ${msg ? `<div class="toast-msg">${msg}</div>` : ''}
+      <div class="toast-title">${escapeHTML(title)}</div>
+      ${msg ? `<div class="toast-msg">${escapeHTML(msg)}</div>` : ''}
     </div>`;
   container.appendChild(toast);
   setTimeout(() => {
@@ -558,6 +656,9 @@ function setupCalculator() {
       const group = this.dataset.group;
       $$(`.toggle-btn[data-group="${group}"]`).forEach(b => b.classList.remove('selected'));
       this.classList.add('selected');
+      collectCurrentStepInputs();
+      recalcAll();
+      updateLiveEstimate();
     });
   });
 
@@ -804,14 +905,17 @@ function updateInsightsSection() {
     // Legend
     const legend = $('#donut-legend');
     if (legend) {
-      legend.innerHTML = segments.map(s => `
-        <div class="legend-item">
-          <div class="legend-dot-label">
-            <div class="legend-dot" style="background:${s.color}"></div>
-            <span class="legend-label">${s.label}</span>
-          </div>
-          <span class="legend-val" style="color:${s.color}">${s.value} kg</span>
-        </div>`).join('');
+      legend.innerHTML = segments.map(s => {
+        const safeColor = escapeHTML(s.color);
+        return `
+          <div class="legend-item">
+            <div class="legend-dot-label">
+              <div class="legend-dot" style="background:${safeColor}"></div>
+              <span class="legend-label">${escapeHTML(s.label)}</span>
+            </div>
+            <span class="legend-val" style="color:${safeColor}">${escapeHTML(s.value.toString())} kg</span>
+          </div>`;
+      }).join('');
     }
   }
 
@@ -827,21 +931,24 @@ function renderTips() {
     .sort((a, b) => b.saving - a.saving)
     .slice(0, 6);
 
-  container.innerHTML = applicable.map(tip => `
-    <div class="tip-card ${tip.impact === 'high' ? 'high-impact' : ''} reveal">
-      <div class="tip-header">
-        <span class="tip-emoji">${tip.emoji}</span>
-        <span class="impact-badge ${tip.impact}">
-          ${tip.impact === 'high' ? '↑↑ High' : tip.impact === 'medium' ? '↑ Medium' : '↓ Low'} Impact
-        </span>
-      </div>
-      <div class="tip-title">${tip.title}</div>
-      <div class="tip-desc">${tip.desc}</div>
-      <div class="tip-saving">
-        <span>🌿</span>
-        <span>Save ~${tip.saving} kg CO₂e/month</span>
-      </div>
-    </div>`).join('');
+  container.innerHTML = applicable.map(tip => {
+    const safeImpact = escapeHTML(tip.impact);
+    return `
+      <div class="tip-card ${safeImpact === 'high' ? 'high-impact' : ''} reveal">
+        <div class="tip-header">
+          <span class="tip-emoji">${escapeHTML(tip.emoji)}</span>
+          <span class="impact-badge ${safeImpact}">
+            ${safeImpact === 'high' ? '↑↑ High' : safeImpact === 'medium' ? '↑ Medium' : '↓ Low'} Impact
+          </span>
+        </div>
+        <div class="tip-title">${escapeHTML(tip.title)}</div>
+        <div class="tip-desc">${escapeHTML(tip.desc)}</div>
+        <div class="tip-saving">
+          <span>🌿</span>
+          <span>Save ~${escapeHTML(tip.saving.toString())} kg CO₂e/month</span>
+        </div>
+      </div>`;
+  }).join('');
 
   // Re-observe new tips for scroll reveal
   $$('#tips-container .reveal').forEach(el => {
@@ -869,14 +976,15 @@ function updateBenchmarks() {
     const info  = rows[key];
     const pct   = (val / maxVal) * 100;
     const annual= ((val * 12) / 1000).toFixed(1);
+    const safeColor = escapeHTML(info.color);
     return `
       <div class="benchmark-row">
         <div class="benchmark-row-header">
-          <span class="benchmark-name">${info.flag} ${info.label}</span>
-          <span class="benchmark-val" style="color:${info.color}">${annual}t/yr</span>
+          <span class="benchmark-name">${escapeHTML(info.flag)} ${escapeHTML(info.label)}</span>
+          <span class="benchmark-val" style="color:${safeColor}">${escapeHTML(annual)}t/yr</span>
         </div>
         <div class="benchmark-bar-track">
-          <div class="benchmark-bar-fill" style="width:${pct}%; background:${info.color}; box-shadow: 0 0 12px ${info.color}55;"></div>
+          <div class="benchmark-bar-fill" style="width:${pct}%; background:${safeColor}; box-shadow: 0 0 12px ${safeColor}55;"></div>
         </div>
       </div>`;
   }).join('');
@@ -897,12 +1005,13 @@ function setupTracker() {
 
   list.innerHTML = HABITS.map(h => {
     const done = !!State.habits[todayKey][h.id];
+    const safeId = escapeHTML(h.id);
     return `
-      <div class="habit-item ${done ? 'checked' : ''}" data-habit="${h.id}" id="habit-${h.id}">
-        <span class="habit-emoji">${h.emoji}</span>
+      <div class="habit-item ${done ? 'checked' : ''}" data-habit="${safeId}" id="habit-${safeId}">
+        <span class="habit-emoji">${escapeHTML(h.emoji)}</span>
         <div class="habit-info">
-          <div class="habit-name">${h.name}</div>
-          <div class="habit-co2">Saves ~${h.saving} kg CO₂e today</div>
+          <div class="habit-name">${escapeHTML(h.name)}</div>
+          <div class="habit-co2">Saves ~${escapeHTML(h.saving.toString())} kg CO₂e today</div>
         </div>
         <div class="habit-check">
           <span class="habit-check-icon">✓</span>
@@ -992,7 +1101,7 @@ function renderWeeklyDots() {
     const key = getDayKey(daysAgo);
     const done = dayHasActivity(key);
     const isToday = daysAgo === 0;
-    return `<div class="weekly-dot ${done ? 'done' : ''} ${isToday && !done ? 'today' : ''}">${d}</div>`;
+    return `<div class="weekly-dot ${done ? 'done' : ''} ${isToday && !done ? 'today' : ''}">${escapeHTML(d)}</div>`;
   }).join('');
 }
 
@@ -1033,6 +1142,34 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('calculator').scrollIntoView({ behavior: 'smooth' });
     });
   }
+
+  // Bonus: Animate goal bar after page load
+  setTimeout(() => {
+    const bar = $('#goal-bar');
+    if (bar) {
+      const todayKey = getTodayKey();
+      const todayHabits = State.habits[todayKey] || {};
+      const count = Object.values(todayHabits).filter(Boolean).length;
+      const pct = Math.min((count / 5) * 100, 100);
+      setTimeout(() => { bar.style.width = pct + '%'; }, 600);
+    }
+
+    // Animate hero ring with dynamic values from State
+    const heroCanvas = $('#hero-ring-canvas');
+    if (heroCanvas) {
+      const gradeColor = getGrade(State.scores.total).color;
+      drawScoreRing(heroCanvas, State.scores.total, 1500, gradeColor, 220, false);
+      const heroValue = $('.score-value', heroCanvas.closest('.score-card'));
+      if (heroValue) {
+        heroValue.textContent = State.scores.total > 0 ? State.scores.total.toLocaleString() : '--';
+        heroValue.style.color = gradeColor;
+      }
+      const heroDesc = heroCanvas.closest('.score-card').querySelector('p');
+      if (heroDesc && State.scores.total > 0) {
+        heroDesc.textContent = 'Welcome back! Here is your current carbon score.';
+      }
+    }
+  }, 500);
 
   // Initial welcome toast
   setTimeout(() => {
