@@ -1,5 +1,9 @@
 # 🌿 EcoTrack — Carbon Footprint Tracker
 
+## To test the code use this URL :
+ https://ecosystem-orcin.vercel.app/ 
+
+
 > **Understand, track, and reduce your personal carbon footprint through simple actions and personalized insights.**
 
 EcoTrack is a premium, fully self-contained web application that helps individuals measure their monthly CO₂ emissions across four key life areas, visualize their impact with animated charts, build daily eco-habits, and compare themselves against global benchmarks — all powered by IPCC-backed emission factors and stored locally with no server or account needed.
